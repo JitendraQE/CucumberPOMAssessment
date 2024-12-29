@@ -1,23 +1,34 @@
 package com.hooks;
 
+import java.util.Properties;
+
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 
 import com.drivermanager.DriverFactoryManager;
-import com.pages.RegistrationPage;
-import com.stepdefinitions.RegistrationPageSteps;
-import com.utill.SharedContext;
+import com.utill.ConfigReader;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.Scenario;
 
 public class ApplicationHooks {
 	
 	private DriverFactoryManager driverFactory;
 	private WebDriver driver;
-	
+	private ConfigReader configReader;
+	Properties prop;
+
 	@Before(order = 0)
+	public void getProperty() {
+		configReader = new ConfigReader();
+		prop = configReader.init_prop();
+	}
+	
+	@Before(order = 1)
 	public void launchBrowser() {
-		String browserName = "chrome";
+		String browserName = prop.getProperty("browser");
 		driverFactory = new DriverFactoryManager();
 		driver = driverFactory.init_driver(browserName);
 	}
@@ -26,5 +37,15 @@ public class ApplicationHooks {
 	public void quitBrowser() {
 		driver.quit();
 	}
+	@After(order = 1)
+	public void tearDown(Scenario scenario) {
+		if (scenario.isFailed()) {
+			// take screenshot:
+			String screenshotName = scenario.getName().replaceAll(" ", "_");
+			byte[] sourcePath = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+			scenario.attach(sourcePath, "image/png", screenshotName);
 
+		}
+	}
+	
 }
