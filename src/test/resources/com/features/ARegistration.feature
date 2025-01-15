@@ -5,6 +5,7 @@ Given User is on registration page
 When user gets the title of the page
 Then page title should be "Create New Customer Account"
 
+@Sequential
 Scenario: Fill the registration form
 Given User is on registration page
 When user fill the registration form from random generation data

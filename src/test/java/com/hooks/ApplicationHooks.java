@@ -8,6 +8,7 @@ import org.openqa.selenium.WebDriver;
 
 import com.drivermanager.DriverFactoryManager;
 import com.utill.ConfigReader;
+import com.utill.ExecutionContext;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -27,17 +28,35 @@ public class ApplicationHooks {
 	}
 	
 	@Before(order = 1)
+    public void setExecutionMode(Scenario scenario) {
+        if (scenario.getSourceTagNames().contains("@Sequential")) {
+            ExecutionContext.setParallel(false);
+        } else {
+            ExecutionContext.setParallel(true);
+        }
+    }
+	
+	@Before(order = 2)
 	public void launchBrowser() {
 		String browserName = prop.getProperty("browser");
 		driverFactory = new DriverFactoryManager();
 		driver = driverFactory.init_driver(browserName);
 	}
+	
+	
 
+	
 	@After(order = 0)
 	public void quitBrowser() {
 		driver.quit();
 	}
+	
 	@After(order = 1)
+	public void clearExecutionMode() {
+		ExecutionContext.clear();
+	}
+	
+	@After(order = 2)
 	public void tearDown(Scenario scenario) {
 		if (scenario.isFailed()) {
 			// take screenshot:
